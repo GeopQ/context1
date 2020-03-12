@@ -1,0 +1,167 @@
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+// контекст содержит текущий язык, имена водителей и диспетчеров
+class Context {
+public:
+    void SetCurrentLocale(const std::string& locale);//+
+    void SetName_ID(const std::string& locale, const std::string& id);//+
+    
+    std::vector<std::string> drivers_dispatchers;
+    std::vector<std::string> ID;
+    // todo - добавить методы
+
+private:
+    std::string current_locale;
+    
+
+    // todo - добавить поля  
+};
+
+// интерфейс автора
+struct Author {
+    // виртуальный деструктор
+    virtual ~Author() = default;
+
+    // метод возвращает текстовое описание автора
+    virtual std::string MakeDescription(const Context& context) const = 0;
+};
+
+// реализация интерфейса автор - диспетчер
+struct Dispatcher : Author {
+    const std::string id;
+
+    // конструктор принимает идентификатор диспетчера
+    explicit Dispatcher(const std::string& dispatcher_id) {
+        const std::string id = dispatcher_id;
+    };
+
+    // реализация метода
+    std::string MakeDescription(const Context& context) const override {
+        std::string s;
+        int i = 0;
+        
+        while (context.ID[i] != id) { i++; }
+        s = "disp, ";
+        s += context.drivers_dispatchers[i];
+        return s;
+    };
+};
+
+// реализация интерфейса автор - тех. поддержка
+struct TechSupport : Author {
+    TechSupport() = default;
+
+    // реализация метода
+    std::string MakeDescription(const Context& context) const override { return "Tech support"; };
+};
+
+// реализация интерфейса автор - водитель
+struct Driver : Author {
+    const std::string id;
+
+    // конструктор принимает идентификатор водителя
+    explicit Driver(const std::string& driver_id) {
+        const std::string id = driver_id;
+    };
+
+    // реализация метода
+    std::string MakeDescription(const Context& context) const override {
+        std::string s;
+        int i = 0;
+       // std::cout << context.ID[i];
+        while (context.ID[i] != id) { i++; }
+        s = "drive, ";
+        s += context.drivers_dispatchers[i];
+        return s;
+    };
+};
+
+// using - удобный аналог typedef
+// std::unique_ptr - умный указатель (вызывает delete в деструкторе)
+// std::vector - динамический массив
+using Authors = std::vector<std::unique_ptr<Author>>;
+
+// функция печатает в стандартный поток вывода всех авторов из массива
+void PrintAuthors(const Authors& authors, const Context& context) {
+    // auto - автоматический вывод типов, чтобы не писать std::unique_ptr<Author>
+    // цикл с двоеточием - удобный способ обхода массива, чтобы не писать
+    // for (size_t i = 0; i < authors.size(); ++i) {
+    //   const auto& author = authors[i];
+    for (const auto& author : authors) {
+        // std::cout - класс для печать в стандартный поток вывода
+        // std::endl - признак конца строки
+        std::cout << author->MakeDescription(context) << std::endl;
+    }
+}
+
+void Context::SetCurrentLocale(const std::string& locale) {
+    current_locale = locale;
+}
+ 
+void Context::SetName_ID(const std::string& locale, const std::string& id) {
+    drivers_dispatchers.emplace_back(locale);
+    ID.emplace_back(id);
+}
+
+//std::string Dispatcher::MakeDescription(const Context& context) {}
+
+
+
+int main() {
+    // создание контекста
+    Context context;
+    
+    context.SetName_ID("anton vlasov", "driver#1");
+    context.SetName_ID("Катя Клеп", "disp#1");
+    context.SetName_ID("Сюся Масюся", "disp#2");
+
+   
+
+    
+    // todo - добавить в контекст:
+    //   водителя с идентификатором driver#1
+    //   диспетчеров с идентификаторам disp#1 и disp#2
+    //   переводы ключей на русский и англиский языки
+
+    // создание пустого массива авторов
+    Authors authors;
+
+    // заполнение массива авторов
+  
+    authors.emplace_back(new TechSupport());
+    authors.emplace_back(new Driver("driver#1"));
+    authors.emplace_back(new Dispatcher("disp#1"));
+    authors.emplace_back(new TechSupport());
+    authors.emplace_back(new Dispatcher("disp#2"));
+    authors.emplace_back(new Driver("driver#1"));
+    
+    
+    // задаём текущий язык контекста как русский
+    context.SetCurrentLocale("ru");
+
+    // печатаем список авторов, должно быть напечатано:
+    //   Тех. поддержка
+    //   Водитель, Василий Иванов
+    //   Диспетчер, Антон Т.
+    //   Тех. поддержка
+    //   Диспетчер, Кристина К.
+    //   Водитель, Василий Иванов
+    PrintAuthors(authors, context);
+    
+    // задаём текущий язык контекста как английский
+    context.SetCurrentLocale("en");
+
+    // печатаем список авторов, должно быть напечатано:
+    //   Tech support
+    //   Driver, Василий Иванов
+    //   Dispatcher, Антон Т.
+    //   Tech support
+    //   Dispatcher, Кристина К.
+    //   Driver, Василий Иванов
+    PrintAuthors(authors, context);
+
+    return 0;
+}
