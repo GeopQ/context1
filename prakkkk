@@ -34,8 +34,8 @@ struct Dispatcher : Author {
     const std::string id;
 
     // конструктор принимает идентификатор диспетчера
-    explicit Dispatcher(const std::string& dispatcher_id) {
-        const std::string id = dispatcher_id;
+    explicit Dispatcher(const std::string& dispatcher_id) : id(dispatcher_id){
+        //const std::string id = dispatcher_id;
     };
 
     // реализация метода
@@ -63,8 +63,8 @@ struct Driver : Author {
     const std::string id;
 
     // конструктор принимает идентификатор водителя
-    explicit Driver(const std::string& driver_id) {
-        const std::string id = driver_id;
+    explicit Driver(const std::string& driver_id) : id(driver_id){
+        //const std::string id = driver_id;
     };
 
     // реализация метода
